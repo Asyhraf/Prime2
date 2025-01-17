@@ -1,0 +1,134 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
+
+use App\Models\Event;
+use App\Models\AhliMesyuarat;
+use App\Models\ButiranAhliMesyuarat;
+use App\Models\ref_aktiviti;
+use App\Models\AhliEvent;
+use App\Models\kehadiranQR;
+use App\Models\kekananan_gred;
+use App\Models\ref_jawatan;
+use App\Models\ref_status_jawatan;
+use App\Models\ref_tajuk_mesyuarat;
+use App\Models\KodGelaran;
+use App\Models\ref_kementerian;
+use App\Models\ref_status_ahli;
+use App\Models\Log_Aktiviti;
+
+class QRCodeController extends Controller
+{
+    public function indexPengesahanQRCode($id_ahli, $id)
+    {
+        $ahli_mesyuarat = AhliMesyuarat::where('id_ahli', $id_ahli)->firstOrFail();
+        $event = Event::where('id', $id)->firstOrFail();
+
+        $butiranQR = AhliEvent::join('butiran_ahli_mesyuarat', 'ahli_event.ahli_id', '=', 'butiran_ahli_mesyuarat.id_ahli')
+            ->join('ahli_mesyuarat', 'butiran_ahli_mesyuarat.id_ahli', '=', 'ahli_mesyuarat.id_ahli')
+            ->leftJoin('ref_jawatan', 'butiran_ahli_mesyuarat.id_jawatan', '=', 'ref_jawatan.id_jawatan')
+            ->leftJoin('ref_kementerian', 'butiran_ahli_mesyuarat.id_kementerian', '=', 'ref_kementerian.id_kementerian')
+            ->leftJoin('lantikan_ahli_mesyuarat', 'ahli_event.ahli_id', '=', 'lantikan_ahli_mesyuarat.id_ahli')
+            ->leftJoin('kekananan_gred', 'lantikan_ahli_mesyuarat.id_gred', '=', 'kekananan_gred.id_gred')
+            ->where('ahli_event.mesyuarat_id', $id)
+            ->where('ahli_event.ahli_id', $id_ahli)
+            ->select('ahli_event.*', 'ahli_mesyuarat.nama_ahli', 'ref_jawatan.nama_jawatan', 'ref_kementerian.nama_kementerian', 'ref_kementerian.singkatan_kementerian', 'kekananan_gred.nama_gred')
+            ->orderByRaw('
+            CASE
+                WHEN lantikan_ahli_mesyuarat.kekananan_mesy_manual BETWEEN 1 AND 1000 AND butiran_ahli_mesyuarat.status = 1 THEN 1
+                WHEN lantikan_ahli_mesyuarat.kekananan_mesy_manual IS NULL THEN 2
+                ELSE 3
+            END
+        ')
+            ->orderBy('lantikan_ahli_mesyuarat.kekananan_mesy_manual', 'ASC')
+            ->first(); // Ensure we get a single record
+
+        $kekananan_gred = kekananan_gred::all();
+        $ref_jawatan = ref_jawatan::all();
+        $ref_status_jawatan = ref_status_jawatan::all();
+
+        return view('mesyuarat.m_QRCode')->with(compact('ahli_mesyuarat', 'event', 'butiranQR', 'ref_jawatan', 'kekananan_gred', 'ref_status_jawatan'));
+    }
+
+    public function simpanKehadiranQR($id_ahli, $id, Request $request, AhliEvent $Aevt)
+    {
+        $ahli_mesyuarat = ButiranAhliMesyuarat::where('id_ahli', $id_ahli)->firstOrFail();
+        $event = Event::where('id', $id)->firstOrFail();
+        $ahli = AhliMesyuarat::where('id_ahli', $id_ahli)->firstOrFail();
+        $nama = $ahli->nama_ahli;
+
+        $ahli_event = AhliEvent::firstOrCreate(
+            ['ahli_id' => $id_ahli, 'mesyuarat_id' => $id]
+        ); // Use first() to get a single record
+        // dd($ahli_event);
+
+        // Use null coalescing operator to handle null values
+        // $nota_kemaskini = $request->nota_kemaskini ?? null;
+
+        if ($ahli_event !== null) {
+            if ($request->kehadiran == 'Y') {
+                $ahli_event->update([
+                    'ahli_id' => $ahli_mesyuarat->id_ahli,
+                    'mesyuarat_id' => $event->id,
+                    'kehadiran' => 'Y',
+                    'catatan' => null,
+                    'wakil_oleh' => null,
+                    'jawatan_wakil' => null,
+                    'id_gred_wakil' => null,
+                    'tarikh_lantikan_wakil' => null,
+                    'id_status_jawatan' => null,
+                    'pegawai_kemaskini' => $request->pegawai_kemaskini_Y ?? null,
+                    'no_tel_pegawai_kemaskini' => $request->no_tel_pegawai_kemaskini_Y ?? null,
+                    'nota_kemaskini' => $request->nota_kemaskini ?? null,
+                ]);
+            } else if ($request->kehadiran == 'N') {
+                $ahli_event->update([
+                    'ahli_id' => $ahli_mesyuarat->id_ahli,
+                    'mesyuarat_id' => $event->id,
+                    'kehadiran' => 'N',
+                    'catatan' => $request->catatan,
+                    'wakil_oleh' => $request->wakil_oleh,
+                    'jawatan_wakil' => $request->jawatan_wakil,
+                    'id_gred_wakil' => $request->id_gred_wakil,
+                    'tarikh_lantikan_wakil' => $request->tarikh_lantikan_wakil,
+                    'id_status_jawatan' => $request->id_status_jawatan,
+                    'pegawai_kemaskini' => $request->pegawai_kemaskini,
+                    'no_tel_pegawai_kemaskini' => $request->no_tel_pegawai_kemaskini,
+                    'nota_kemaskini' => $request->nota_kemaskini ?? null,
+                ]);
+            } else if ($request->kehadiran == 'Null') {
+                $ahli_event->update([
+                    'ahli_id' => $ahli_mesyuarat->id_ahli,
+                    'mesyuarat_id' => $event->id,
+                    'kehadiran' => 'Null',
+                    'catatan' => null,
+                    'wakil_oleh' => null,
+                    'jawatan_wakil' => null,
+                    'id_gred_wakil' => null,
+                    'tarikh_lantikan_wakil' => null,
+                    'id_status_jawatan' => null,
+                    'pegawai_kemaskini' => null,
+                    'no_tel_pegawai_kemaskini' => null,
+                    'nota_kemaskini' => null,
+                ]);
+            }
+        }
+
+        Log_Aktiviti::create([
+            'module_id'     => json_encode($ahli_event->id),
+            'module_type'   => class_basename(get_class($Aevt)),
+            'before'        => null,
+            'after'         => json_encode($ahli_event),
+            'action'        => $request->route()->getActionMethod(),
+            'action_byid'   => $ahli_mesyuarat->id_ahli,
+            'action_name'   => $nama,
+        ]);
+
+        return redirect("/m_QRCodeBerjaya/{$id_ahli}/{$id}");
+    }
+}

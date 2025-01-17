@@ -1,0 +1,36 @@
+/*!
+ * Custom CSS For CustomTheme.Blade.Php 
+ * Create by: Norhazlan Abd Hamid
+ * Created on: 21 July 2020
+ * Updated on: 21 July 2020
+ */
+
+.custom_header {
+  padding: 60px;
+  text-align: center;
+  background: #1abc9c;
+  color: white;
+  font-size: 30px;
+} 
+
+.dropdown-user {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  right: 0; 
+  font-size: 13px;
+}
+
+.dropdown-user:hover .dropdown-content {display: block;}
+
+.dropdown-content ul li {
+  list-style-type: none
+}
