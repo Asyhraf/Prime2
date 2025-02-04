@@ -134,14 +134,30 @@
                                 </tbody>
                             </table>
                             <br>
-                            <div class="form-group m-b-0" style="text-align: center">
+                                <!-- Guna @can untuk mengawal akses kepada borang ini -->
+                                @can('access-qr-code', [session('session_id_ahli'), session('session_meeting_id')])
+                                    <div class="form-group m-b-0" style="text-align: center">
+                                        <button type="submit" name="hantar" value="hantar" class="btn btn-primary btn-sm rounded">
+                                            <i class="fa fa-send"></i> Hantar
+                                        </button>
+                                        <button type="reset" name="reset" value="reset" class="btn btn-danger btn-sm rounded">
+                                            <i class="fa fa-refresh"></i> Tetapan Semula
+                                        </button>
+                                    </div>
+                                @else
+                                    <div class="alert alert-warning text-center mt-3">
+                                        <strong>Anda tidak mempunyai kebenaran untuk mengakses fungsi ini.</strong>
+                                    </div>
+                                @endcan
+
+                            {{-- <div class="form-group m-b-0" style="text-align: center">
                                 <button type="submit" name="hantar" value="hantar" class="btn btn-primary btn-sm rounded">
                                     <i class="fa fa-send"></i> Hantar
                                 </button>
                                 <button type="reset" name="reset" value="reset" class="btn btn-danger btn-sm rounded">
                                     <i class="fa fa-refresh"></i> Tetapan Semula
                                 </button>
-                            </div>
+                            </div> --}}
                         </form>
                     </div>
                 </div>

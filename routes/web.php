@@ -82,16 +82,23 @@ use App\Http\Controllers\QRCodeController;
 
 
 // Updated route for login functionality
-Route::get('/login/{ahli_id}/{event_id?}', [AhliLoginController::class, 'showLoginForm'])->name('ahli.login.form');
+Route::get('/login/{id_ahli}/{id?}', [AhliLoginController::class, 'showLoginForm'])->name('ahli.login.form');
+// Route to handle login submission with rate limiting
+Route::post('/login/ahli', [AhliLoginController::class, 'submit'])->name('ahli.login.submit')->middleware('throttle:600,1');
 
 // Route for QR Code verification
-Route::get('/m_QRCode/{id_ahli}/{id}', [QRCodeController::class, 'indexPengesahanQRCode'])->name('pengesahanQR');
+Route::get('/m_QRCode/{id_ahli}/{id}', [QRCodeController::class, 'indexPengesahanQRCode'])
+->name('pengesahanQR')
+->middleware('verify.qrcode');
+
+Route::get('/m_QRCode/{id_ahli}/{id}', [QRCodeController::class, 'showQRCode'])->name('pengesahanQR')->middleware('verify.qrcode');
+
 
 // Route for attendance form
-Route::get('/m_QRCode/{event_id}', [AttendanceController::class, 'attendanceForm'])->name('attendance.form');
+Route::get('/m_QRCode/{id_ahli}/{id}', [AttendanceController::class, 'attendanceForm'])->name('attendance.form');
 
-// Route to handle login submission with rate limiting
-Route::post('/login/ahli', [AhliLoginController::class, 'submit'])->name('ahli.login.submit')->middleware('throttle:60,1');
+
+
 
 // Default route for testing
 Route::get('/default', function () {

@@ -129,9 +129,9 @@ class MesyuaratPengesahanController extends Controller
                 ->where('ahli_event.mesyuarat_id', $id)
                 ->where('butiran_ahli_mesyuarat.mesyuarat_ksukp', '=', '1')
                 ->orderByRaw('
-                    CASE 
+                    CASE
                         WHEN lantikan_ahli_mesyuarat.kekananan_mesy_manual BETWEEN 1 AND 1000 AND butiran_ahli_mesyuarat.status = 1 THEN 1
-                        WHEN lantikan_ahli_mesyuarat.kekananan_mesy_manual IS NULL THEN 2                       
+                        WHEN lantikan_ahli_mesyuarat.kekananan_mesy_manual IS NULL THEN 2
                         ELSE 3
                     END
                 ')
@@ -144,7 +144,7 @@ class MesyuaratPengesahanController extends Controller
                 ->where('ahli_event.mesyuarat_id', $id)
                 ->where('butiran_ahli_mesyuarat.mesyuarat_mbkm', '=', '1')
                 ->orderByRaw('
-                    CASE 
+                    CASE
                         WHEN lantikan_ahli_mesyuarat.kekananan_mesy_manual BETWEEN 1 AND 1000 AND butiran_ahli_mesyuarat.status = 1 THEN 1
                         WHEN lantikan_ahli_mesyuarat.kekananan_mesy_manual IS NULL THEN 2
                         ELSE 3
@@ -186,6 +186,12 @@ class MesyuaratPengesahanController extends Controller
         $eventTitle = $event->title;
 
         $ahli_event = $this->getAhliEvent($eventTitle);
+        // Ensure you add token check here
+        //Example of token handling - If token is required to validate the request, you can add it here:
+        // $token = request()->input('token');  // or fetch token from session, depending on your setup
+        // if ($token !== 'expected_token') {
+        //     return response('Unauthorized', 401);  // Handle invalid token
+        // }
 
         if ($ahli_event->isNotEmpty() && $kehadiran->isEmpty()) {
             foreach ($ahli_event as $ahli) {
@@ -205,6 +211,7 @@ class MesyuaratPengesahanController extends Controller
             $kehadiran = AhliEvent::where('mesyuarat_id', $id)->get(); // refetch the updated kehadiran
         }
 
+
         if ($eventTitle == "KSUKP") {
             $kehadiran = AhliEvent::join('butiran_ahli_mesyuarat', 'ahli_event.ahli_id', '=', 'butiran_ahli_mesyuarat.id_ahli')
                 ->join('ahli_mesyuarat', 'butiran_ahli_mesyuarat.id_ahli', '=', 'ahli_mesyuarat.id_ahli')
@@ -216,7 +223,7 @@ class MesyuaratPengesahanController extends Controller
                 ->where('butiran_ahli_mesyuarat.mesyuarat_ksukp', '=', '1')
                 ->select('ahli_event.*', 'ahli_mesyuarat.nama_ahli', 'ref_jawatan.nama_jawatan', 'ref_kementerian.nama_kementerian', 'kekananan_gred.nama_gred', 'lantikan_ahli_mesyuarat.tarikh_lantikan')
                 ->orderByRaw('
-                CASE 
+                CASE
                     WHEN lantikan_ahli_mesyuarat.kekananan_mesy_manual BETWEEN 1 AND 1000 AND butiran_ahli_mesyuarat.status = 1 THEN 1
                     WHEN lantikan_ahli_mesyuarat.kekananan_mesy_manual IS NULL THEN 2
                     ELSE 3
@@ -235,7 +242,7 @@ class MesyuaratPengesahanController extends Controller
                 ->where('butiran_ahli_mesyuarat.mesyuarat_mbkm', '=', '1')
                 ->select('ahli_event.*', 'ahli_mesyuarat.nama_ahli', 'ref_jawatan.nama_jawatan', 'ref_kementerian.nama_kementerian', 'kekananan_gred.nama_gred', 'lantikan_ahli_mesyuarat.tarikh_lantikan')
                 ->orderByRaw('
-                CASE 
+                CASE
                     WHEN lantikan_ahli_mesyuarat.kekananan_mesy_manual BETWEEN 1 AND 1000 AND butiran_ahli_mesyuarat.status = 1 THEN 1
                     WHEN lantikan_ahli_mesyuarat.kekananan_mesy_manual IS NULL THEN 2
                     ELSE 3
@@ -263,7 +270,7 @@ class MesyuaratPengesahanController extends Controller
         return view('mesyuarat.m_Wakil')->with(compact('wakil'));
     }
 
-    public function blast_email_ksukp($id, $id_ahli)
+    public function blast_email_ksukp($id, $id_ahli, )
     {
         // Retrieve the event using the event ID
         $event = Event::where('id', $id)->firstOrFail();
@@ -273,6 +280,8 @@ class MesyuaratPengesahanController extends Controller
             ->where('mesyuarat_id', $id)
             ->whereNull('kehadiran')
             ->firstOrFail();
+
+
 
         // Join query to fetch related information
         $eventDetails = AhliEvent::join('butiran_ahli_mesyuarat', 'ahli_event.ahli_id', '=', 'butiran_ahli_mesyuarat.id_ahli')

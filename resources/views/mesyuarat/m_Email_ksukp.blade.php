@@ -129,8 +129,13 @@
                                         {{-- <a href="{{ route('ahli.login.form', ['event_id' => $event->id]) }}" target="_blank">
                                             Login for Event {{ $event->id }}
                                         </a>                                 --}}
+                                        {{-- <a href="{{ url('/login/' . $ahli->ahli_id . '/' . $event->id . '?token=' . $token->access_token) }}" target="_blank">
+                                            Daftar Masuk Borang Pengesahan Kehadiran. {{ $event->id }}
+                                        </a> --}}
+
+
                                         <a href="{{ url('/login/' . $ahli->ahli_id . '/' . $event->id) }}" target="_blank">
-                                            Login for Event {{ $event->id }}
+                                            Klik Untuk Ke Halaman Pengesahan Kehadiran Mesyuarat: {{ $event->title }}
                                         </a>
 
 

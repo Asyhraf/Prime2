@@ -123,7 +123,11 @@
                                     {{ $event->meeting_numbers }} Tahun {{ $event->year }}</strong><br><br>
                                 Mohon perhatian dan kerjasama Ahli {{ $event->TajukMesyuarat->nama_tajuk }} yang belum membuat pengesahan
                                 kehadiran untuk mengesahkan kehadiran melalui pautan<br><br>
-                                <strong>URL: http://broga.kabinet.gov.my/prime2.0/public/m_QRCode/{{ $ahli->ahli_id }}/{{ $event->id }}
+                                <strong>
+                                    {{-- URL: http://broga.kabinet.gov.my/prime2.0/public/m_QRCode/{{ $ahli->ahli_id }}/{{ $event->id }} --}}
+                                    <a href="{{ url('/login/' . $ahli->ahli_id . '/' . $event->id) }}" target="_blank">
+                                        Klik Untuk Ke Halaman Pengesahan Kehadiran Mesyuarat: {{ $event->title }}
+                                     </a>
                                 </strong><br><br>
                                 Sekian, terima kasih.<br><br><br>
                                 <strong>"MALAYSIA MADANI"</strong><br><br>
@@ -140,7 +144,11 @@
                                         {{ $event->meeting_numbers }} TAHUN {{ $event->year }}</strong><br><br>
                                     Mohon perhatian dan kerjasama Ahli {{ $event->TajukMesyuarat->nama_tajuk }} yang belum membuat pengesahan
                                     kehadiran untuk mengesahkan kehadiran di pautan (link GForm) atau mengimbas kod QR di bawah.<br><br>
-                                    <strong>URL: http://broga.kabinet.gov.my/prime2.0/public/m_QRCode/{{ $ahli->ahli_id }}/{{ $event->id }}
+                                    <strong>
+                                        {{-- URL: http://broga.kabinet.gov.my/prime2.0/public/m_QRCode/{{ $ahli->ahli_id }}/{{ $event->id }} --}}
+                                        <a href="{{ url('/login/' . $ahli->ahli_id . '/' . $event->id) }}" target="_blank">
+                                            Klik untuk ke paparan pengesahan mesyuarat: {{ $event->title }}
+                                         </a>
                                     </strong><br><br>
                                     Sekian, terima kasih.<br><br><br>
                                     <strong>"MALAYSIA MADANI"</strong><br><br>

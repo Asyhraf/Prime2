@@ -7,10 +7,19 @@
                 <!-- Display Form for Ahli Mesyuarat Login -->
                 <form method="POST" action="{{ route('ahli.login.submit') }}" class="login100-form validate-form">
                     @csrf
+
+                    <!-- Hidden input to store the ahli_id -->
+                    <input type="hidden" name="id_ahli" value="{{ $id_ahli }}">
+
+                    <!-- Hidden input to store the event_id, if provided -->
+                    @if ($id)
+                    <input type="hidden" name="id" value="{{ $id }}">
+                    @endif
+
                     <div class="card-header">
                         <span class="login100-form-title">
                             <img src="{{ asset('landpage/images/logo2.png') }}" alt="Logo"><br>
-                            <b>APLIKASI PRIME 2.0</b>
+                            <b>PENGESAHAN KEHADIRAN APLIKASI PRIME 2.0</b>
                         </span>
                     </div>
 
@@ -19,6 +28,9 @@
                             <div class="col-md-6 p-l-40 p-r-40">
                                 <!-- Input for IC Number -->
                                 <input type="text" name="no_ic" class="form-control" placeholder="Enter your IC Number" required>
+                                @if ($errors->has('no_ic'))
+                                    <span class="text-danger">{{ $errors->first('no_ic') }}</span>
+                                @endif
                                 <button type="submit" class="btn btn-primary mt-3">Login</button>
                             </div>
 
@@ -48,21 +60,3 @@
     </div>
 @endsection
 
-<script>
-    function myFunction1() {
-        var x = document.getElementById("password");
-        var show_eye = document.getElementById("show_eye");
-        var hide_eye = document.getElementById("hide_eye");
-        hide_eye.classList.remove("d-none");
-        if (x.type === "password") {
-            x.type = "text";
-            show_eye.style.display = "none";
-            hide_eye.style.display = "block";
-        } else {
-            x.type = "password";
-            show_eye.style.display = "block";
-            hide_eye.style.display = "none";
-
-        }
-    }
-</script>

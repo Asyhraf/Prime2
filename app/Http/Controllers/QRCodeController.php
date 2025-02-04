@@ -2,30 +2,85 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
-
 use App\Models\Event;
-use App\Models\AhliMesyuarat;
-use App\Models\ButiranAhliMesyuarat;
-use App\Models\ref_aktiviti;
 use App\Models\AhliEvent;
-use App\Models\kehadiranQR;
-use App\Models\kekananan_gred;
-use App\Models\ref_jawatan;
-use App\Models\ref_status_jawatan;
-use App\Models\ref_tajuk_mesyuarat;
 use App\Models\KodGelaran;
+use App\Models\kehadiranQR;
+
+use App\Models\ref_jawatan;
+use Illuminate\Support\Str;
+use App\Models\Log_Aktiviti;
+use App\Models\ref_aktiviti;
+use Illuminate\Http\Request;
+use App\Models\AhliMesyuarat;
+use App\Models\kekananan_gred;
+use Illuminate\Support\Carbon;
 use App\Models\ref_kementerian;
 use App\Models\ref_status_ahli;
-use App\Models\Log_Aktiviti;
+use App\Models\ref_status_jawatan;
+use Illuminate\Support\Facades\DB;
+use App\Models\ref_tajuk_mesyuarat;
+use Illuminate\Support\Facades\Log;
+use App\Models\ButiranAhliMesyuarat;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Session;
 
 class QRCodeController extends Controller
 {
+    public function showQRCode($id_ahli, $id, Request $request)
+    {
+        // Check if the user is logged in
+        if (!Session::has('ahli_logged_in')) {
+            return redirect('/login')->withErrors('Sila log masuk dahulu.');
+        }
+
+        // Validate that the current session's id_ahli matches the URL
+        if (Session::get('session_id_ahli') != $id_ahli) {
+            return redirect('/login')->withErrors('Akses ditolak. ID ahli tidak sah.');
+        }
+
+        // Validate that the current session's meeting ID matches the URL
+        if (Session::get('session_meeting_id') != $id) {
+            return redirect('/login')->withErrors('Akses ditolak. ID mesyuarat tidak sah.');
+        }
+
+        // Verify that this id_ahli and id combination exists in the database
+        $validEvent = DB::table('ahli_event')
+            ->where('ahli_id', $id_ahli)
+            ->where('id', $id)
+            ->first();
+
+        if (!$validEvent) {
+            return redirect('/login')->withErrors('Akses ditolak. Kombinasi ID ahli dan mesyuarat tidak wujud.');
+        }
+
+        // If everything is valid, show the QR Code page
+        return view('qr_code', compact('id_ahli', 'id'));
+    }
+
     public function indexPengesahanQRCode($id_ahli, $id)
     {
+        // Semak jika user dibenarkan akses berdasarkan Gate
+        Log::info('Gate Check:', ['id_ahli' => $id_ahli, 'id' => $id]);
+        Log::info('Session Values:', [
+            'session_id_ahli' => session('session_id_ahli'),
+            'session_meeting_id' => session('session_meeting_id')
+        ]);
+
+
+
+            if (!Gate::allows('access-qr-code', [$id_ahli, $id])) {
+                Log::warning('Akses tidak dibenarkan untuk ahli ID: ' . $id_ahli . ' dengan mesyuarat ID: ' . $id);
+                abort(403, 'Akses tidak dibenarkan');
+            }
+
+
+        // if (!Gate::allows('access-qr-code', [$id_ahli, $id]))
+        //     {
+        //         abort(403, 'Akses tidak dibenarkan');
+        //     }
+
+            // Kod asal jika akses dibenarkan
         $ahli_mesyuarat = AhliMesyuarat::where('id_ahli', $id_ahli)->firstOrFail();
         $event = Event::where('id', $id)->firstOrFail();
 
@@ -48,11 +103,15 @@ class QRCodeController extends Controller
             ->orderBy('lantikan_ahli_mesyuarat.kekananan_mesy_manual', 'ASC')
             ->first(); // Ensure we get a single record
 
+            Log::info('Query Result:', ['butiranQR' => $butiranQR]);
+
+
         $kekananan_gred = kekananan_gred::all();
         $ref_jawatan = ref_jawatan::all();
         $ref_status_jawatan = ref_status_jawatan::all();
 
-        return view('mesyuarat.m_QRCode')->with(compact('ahli_mesyuarat', 'event', 'butiranQR', 'ref_jawatan', 'kekananan_gred', 'ref_status_jawatan'));
+        return view('mesyuarat.m_QRCode')->with(compact('id_ahli', 'id', 'ahli_mesyuarat', 'event', 'butiranQR', 'ref_jawatan', 'kekananan_gred', 'ref_status_jawatan'));
+
     }
 
     public function simpanKehadiranQR($id_ahli, $id, Request $request, AhliEvent $Aevt)
