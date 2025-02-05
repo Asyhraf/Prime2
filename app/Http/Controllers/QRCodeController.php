@@ -58,6 +58,7 @@ class QRCodeController extends Controller
         return view('qr_code', compact('id_ahli', 'id'));
     }
 
+
     public function indexPengesahanQRCode($id_ahli, $id)
     {
                 // Pastikan session diset dulu

@@ -21,8 +21,7 @@ class AhliLoginController extends Controller
             'id' => $id
         ]);
     }
-
-
+    //test Rimaz was here
     // public function showLoginForm(Request $request)
     // {
     //     return view('auth.ahli_login', [
@@ -115,7 +114,7 @@ class AhliLoginController extends Controller
             }
     }
 }
-
+// aku boleh je
 
 //     public function login(Request $request)
 // {
