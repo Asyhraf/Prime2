@@ -60,19 +60,21 @@ class QRCodeController extends Controller
 
     public function indexPengesahanQRCode($id_ahli, $id)
     {
-        // Semak jika user dibenarkan akses berdasarkan Gate
-        Log::info('Gate Check:', ['id_ahli' => $id_ahli, 'id' => $id]);
-        Log::info('Session Values:', [
+                // Pastikan session diset dulu
+        Session::put('session_id_ahli', $id_ahli);
+        Session::put('session_meeting_id', $id);
+
+        // Log untuk pastikan session diset
+        Log::info('Session Set in Controller:', [
             'session_id_ahli' => session('session_id_ahli'),
             'session_meeting_id' => session('session_meeting_id')
         ]);
 
-
-
-            if (!Gate::allows('access-qr-code', [$id_ahli, $id])) {
-                Log::warning('Akses tidak dibenarkan untuk ahli ID: ' . $id_ahli . ' dengan mesyuarat ID: ' . $id);
-                abort(403, 'Akses tidak dibenarkan');
-            }
+        // Sekarang baru check Gate
+        if (!Gate::allows('access-qr-code', [$id_ahli, $id])) {
+            Log::warning("Akses tidak dibenarkan untuk ahli ID: $id_ahli dengan mesyuarat ID: $id");
+            abort(403, 'Akses tidak dibenarkan');
+        }
 
 
         // if (!Gate::allows('access-qr-code', [$id_ahli, $id]))

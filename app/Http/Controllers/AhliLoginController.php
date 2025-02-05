@@ -77,6 +77,15 @@ class AhliLoginController extends Controller
             'session_meeting_id' => $id
         ]);
 
+        // Debug session data
+        //     dd([
+        //         'session_id_ahli' => session('session_id_ahli'),
+        //         'session_meeting_id' => session('session_meeting_id'),
+        //         'no_ic' => $no_ic,
+        //         'id_ahli' => $id_ahli,
+        //         'id' => $id
+        //     ]);
+
 
         // Session::put('ahli_logged_in', true);
         // Session::put('ahli_no_ic', $no_ic);
